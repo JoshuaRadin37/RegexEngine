@@ -1,0 +1,6 @@
+#ifndef REGEXENGINE_LIBRARY_H
+#define REGEXENGINE_LIBRARY_H
+
+void hello();
+
+#endif //REGEXENGINE_LIBRARY_H
