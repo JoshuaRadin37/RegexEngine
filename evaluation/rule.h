@@ -6,7 +6,7 @@
 #define REGEXENGINE_RULE_H
 
 
-
+#include <string>
 
 class dismantled_rule;
 
@@ -34,6 +34,9 @@ public:
 	bool is_force_occur() const;
 	
 	virtual dismantled_rule* to_dismantled_rule(int new_start, int new_end);
+	
+	virtual std::string match_reason() const;
+	std::string to_string() const;
 };
 
 

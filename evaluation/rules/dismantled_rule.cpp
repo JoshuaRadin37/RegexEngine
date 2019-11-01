@@ -20,3 +20,7 @@ dismantled_rule::dismantled_rule(int start_state, int end_state, bool force_occu
 dismantled_rule *dismantled_rule::to_dismantled_rule(int new_start, int new_end) {
 	return new dismantled_rule(new_start, new_end, is_force_occur(), original_rule);
 }
+
+std::string dismantled_rule::match_reason() const {
+	return original_rule->match_reason();
+}

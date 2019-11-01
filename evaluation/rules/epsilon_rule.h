@@ -13,6 +13,8 @@ public:
 	epsilon_rule(int start_state, int end_state);
 	
 	bool match(char input, int *chars_consumed_ptr, int *next_state_ptr) const override;
+	
+	virtual std::string match_reason() const override;
 };
 
 

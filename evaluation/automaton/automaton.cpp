@@ -7,7 +7,21 @@
 #include <set>
 #include <utility>
 #include <evaluation/rules/dismantled_rule.h>
+#include <iostream>
 #include "automaton.h"
+
+template <typename T>
+static std::ostream& operator<<(std::ostream& os, const std::vector<T>& vector) {
+	os << "[";
+	bool first = true;
+	for (const T &item : vector) {
+		if(!first) os << ", ";
+		else first = false;
+		os << item;
+	}
+	os << "]";
+	return os;
+}
 
 automaton::automaton(ruleset *rules) : rules(rules) {}
 
@@ -17,6 +31,19 @@ std::vector<int> map_pairs_to_states(const std::vector<std::pair<int, int>>& v) 
 		output.push_back(item.first);
 	}
 	return output;
+}
+
+template <>
+std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<int, int>>& v) {
+	os << "[";
+	bool first = true;
+	for (const std::pair<int, int> &item : v) {
+		if(!first) os << ", ";
+		else first = false;
+		os << "{state: " << item.first << ", position: " << item.second << "}";
+	}
+	os << "]";
+	return os;
 }
 
 bool automaton::accept(const std::string &input) {
@@ -34,6 +61,7 @@ bool automaton::accept(const std::string &input) {
 	std::set<std::pair<int, int>> occured_states;
 	
 	do {
+		std::cout << "Current states: " << current_state << std::endl;
 		std::set<std::pair<int, int>> next_state_set;
 		for (const auto &state_and_position : current_state){
 			occured_states.insert(state_and_position);
@@ -63,7 +91,8 @@ bool automaton::accept(const std::string &input) {
 		}
 		
 		current_state = std::vector<std::pair<int, int>>(next_state_set.begin(), next_state_set.end());
-	} while(!current_state.empty() && !any_reach_end(input, current_state));
+	} while(!current_state.empty());
+	std::cout << "final states: " << current_state << std::endl;
 	return !current_state.empty() && rules->contains_accepting_state(map_pairs_to_states(current_state));
 }
 
@@ -147,4 +176,30 @@ automaton::automaton_state_transpose automaton::add_automaton(const automaton &o
 	
 	
 	return automaton::automaton_state_transpose(new_initial_state, end_states);
+}
+
+
+template <>
+std::ostream& operator<< <rule *>(std::ostream& os, const std::vector<rule *>& vector) {
+	struct {
+		bool operator() (rule* a, rule* b) {
+			return a->get_start_state() < b->get_start_state();
+		}
+	} custom_less;
+	std::vector<rule *> sorted(vector);
+	std::sort(sorted.begin(), sorted.end(), custom_less);
+	for (const rule* r : sorted) {
+		os << "\t" << r->to_string() << std::endl;
+	}
+	return os;
+}
+
+void automaton::print_info() const {
+	std::vector<int> used = get_used_states();
+	std::sort(used.begin(), used.end());
+	std::cout << "States: " << used << std::endl;
+	std::cout << "Start state: " << get_start_state() << std::endl;
+	std::cout << "Accepting states: " << get_accepting_states() << std::endl;
+	std::cout << "Rules: " << std::endl;
+	std::cout << rules->get_all_rules();
 }

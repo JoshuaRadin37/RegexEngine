@@ -22,3 +22,7 @@ std::string atomic_node::infix() const {
 std::vector<abstract_syntax_node *> atomic_node::get_children() {
 	return std::vector<abstract_syntax_node *>();
 }
+
+const token &atomic_node::get_tok() const {
+	return tok;
+}

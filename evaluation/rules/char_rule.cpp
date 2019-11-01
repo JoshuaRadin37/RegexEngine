@@ -15,3 +15,7 @@ bool char_rule::match(char input, int *chars_consumed_ptr, int *next_state_ptr) 
 	
 	return false;
 }
+
+std::string char_rule::match_reason() const {
+	return std::string() + c;
+}

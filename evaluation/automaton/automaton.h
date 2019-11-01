@@ -26,7 +26,8 @@ protected:
 	int get_start_state() const;
 	std::vector<int> get_accepting_states() const;
 public:
-	automaton(ruleset *rules);
+	explicit automaton(ruleset *rules);
+	explicit automaton(automaton* other);
 	
 	bool accept(const std::string& input);
 	
@@ -38,6 +39,8 @@ public:
 		automaton_state_transpose(int initial_state, std::vector<int> final_states);
 	};
 	automaton_state_transpose add_automaton(const automaton& other);
+	
+	void print_info() const;
 };
 
 

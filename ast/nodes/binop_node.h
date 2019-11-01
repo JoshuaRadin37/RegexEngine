@@ -23,6 +23,12 @@ public:
 	virtual std::string infix() const override;
 	
 	virtual std::vector<abstract_syntax_node *> get_children() override;
+	
+	abstract_syntax_node *get_left() const;
+	
+	abstract_syntax_node *get_right() const;
+	
+	const binop &get_op() const;
 };
 
 

@@ -19,6 +19,8 @@ public:
 	virtual std::string infix() const override;
 	
 	virtual std::vector<abstract_syntax_node *> get_children() override;
+	
+	const token &get_tok() const;
 };
 
 

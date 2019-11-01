@@ -13,3 +13,7 @@ bool epsilon_rule::match(char input, int *chars_consumed_ptr, int *next_state_pt
 	return true;
 }
 
+std::string epsilon_rule::match_reason() const {
+	return "epsilon";
+}
+

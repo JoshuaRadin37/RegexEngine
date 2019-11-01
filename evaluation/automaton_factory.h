@@ -11,10 +11,13 @@
 class automaton_factory {
 public:
 	static automaton* create_char_automaton(char c);
+	static automaton* create_epsilon_automaton();
+	
 	static automaton* create_rule_automaton(rule* rule);
 	static automaton* create_union_automaton(automaton* left, automaton* right);
 	static automaton* create_concat_automaton(automaton* left, automaton* right);
 	static automaton* create_concat_automaton(const std::vector<automaton *>& a);
+	static automaton* create_string_automaton(const std::string& str);
 	static automaton* create_closure_automaton(automaton* a);
 	
 };

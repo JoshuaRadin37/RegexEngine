@@ -30,6 +30,7 @@ public:
 	virtual std::string infix()const = 0;
 	virtual std::vector<abstract_syntax_node *> get_children() = 0;
 	
+	type get_my_type() const;
 	
 };
 

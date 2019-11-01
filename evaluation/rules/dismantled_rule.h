@@ -17,6 +17,8 @@ public:
 	virtual bool match(char input, int *chars_consumed_ptr, int *next_state_ptr) const override;
 	
 	virtual dismantled_rule *to_dismantled_rule(int new_start, int new_end) override;
+	
+	std::string match_reason() const override;
 };
 
 

@@ -7,4 +7,8 @@
 
 abstract_syntax_node::abstract_syntax_node(abstract_syntax_node::type type) : my_type(type) {}
 
+abstract_syntax_node::type abstract_syntax_node::get_my_type() const {
+	return my_type;
+}
+
 

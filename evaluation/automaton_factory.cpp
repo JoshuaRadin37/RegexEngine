@@ -13,6 +13,15 @@ automaton *automaton_factory::create_char_automaton(char c) {
 	return output;
 }
 
+automaton *automaton_factory::create_epsilon_automaton() {
+	auto output = new automaton(new ruleset);
+	int start = output->find_unused_state(), end = output->find_unused_state();
+	output->rules->set_start_state(start);
+	output->rules->add_accepting_state(end);
+	output->rules->add_epsilon_rule(start, end);
+	return output;
+}
+
 automaton *automaton_factory::create_rule_automaton(rule *rule) {
 	auto rules = new ruleset();
 	rules->add_rule(rule);
@@ -40,12 +49,14 @@ automaton *automaton_factory::create_union_automaton(automaton *left, automaton 
 
 automaton *automaton_factory::create_concat_automaton(automaton *left, automaton *right) {
 	auto output = new automaton(new ruleset);
-	int start_state = output->find_unused_state();
+	
 	auto transpose_left = output->add_automaton(*left);
 	auto transpose_right = output->add_automaton(*right);
 	
+	int start_state = transpose_left.initial_state;
+	
 	output->rules->set_start_state(start_state);
-	output->rules->add_epsilon_rule(start_state, transpose_left.initial_state);
+	//output->rules->add_epsilon_rule(start_state, transpose_left.initial_state);
 	
 	for (const auto &final_state : transpose_left.final_states) {
 		output->rules->add_epsilon_rule(final_state, transpose_right.initial_state);
@@ -65,6 +76,17 @@ automaton *automaton_factory::create_concat_automaton(const std::vector<automato
 		auto sub = std::vector<automaton *>(&a[0], &a[a.size() - 1]);
 		return create_concat_automaton(create_concat_automaton(sub), a.back());
 	}
+}
+
+automaton *automaton_factory::create_string_automaton(const std::string &str) {
+	if(str.empty()) return nullptr;
+	if(str.size() == 1) return create_char_automaton(str[0]);
+	
+	auto last = create_char_automaton(str.back());
+	auto before = create_string_automaton(str.substr(0, str.length() - 1));
+	
+	return create_concat_automaton(before, last);
+	
 }
 
 automaton *automaton_factory::create_closure_automaton(automaton *a) {

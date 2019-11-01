@@ -24,4 +24,10 @@ dismantled_rule *rule::to_dismantled_rule(int new_start, int new_end) {
 	return new dismantled_rule(new_start, new_end, force_occur, this);
 }
 
+std::string rule::match_reason() const{
+	return "unknown";
+}
 
+std::string rule::to_string() const{
+	return std::to_string(start_state) + " on " + match_reason() + " -> " + std::to_string(end_state);
+}

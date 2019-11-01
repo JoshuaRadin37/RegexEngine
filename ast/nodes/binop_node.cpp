@@ -23,3 +23,15 @@ std::vector<abstract_syntax_node *> binop_node::get_children() {
 	return std::vector<abstract_syntax_node *>({left, right});
 }
 
+abstract_syntax_node *binop_node::get_left() const {
+	return left;
+}
+
+abstract_syntax_node *binop_node::get_right() const {
+	return right;
+}
+
+const binop &binop_node::get_op() const {
+	return op;
+}
+

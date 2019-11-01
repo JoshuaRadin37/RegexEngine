@@ -22,3 +22,11 @@ std::string uniop_node::infix() const {
 std::vector<abstract_syntax_node *> uniop_node::get_children() {
 	return std::vector<abstract_syntax_node *>({internal});
 }
+
+abstract_syntax_node *uniop_node::get_internal() const {
+	return internal;
+}
+
+const uniop &uniop_node::get_op() const {
+	return op;
+}
