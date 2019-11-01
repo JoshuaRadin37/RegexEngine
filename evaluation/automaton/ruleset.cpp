@@ -11,27 +11,30 @@ ruleset::~ruleset() {
 }
 
 ruleset::ruleset() {
-	state_to_rule_map = new std::multimap<int, rule *>();
+	state_to_rule_map = new std::unordered_map<int, std::vector<rule *>>();
 }
 
-ruleset::ruleset(int start, std::initializer_list<int> accepting_states) {
+ruleset::ruleset(int start, std::initializer_list<int> accepting_states) : ruleset() {
 	start_state = start;
 	this->accepting_states = accepting_states;
+	
+}
+
+bool ruleset::contains_state(int state) {
+	return state_to_rule_map->find(state) != state_to_rule_map->end();
 }
 
 void ruleset::add_rule(rule *new_rule) {
-	auto val = std::pair<int, rule *>(new_rule->get_start_state(), new_rule);
-	state_to_rule_map->insert(val);
+	int state = new_rule->get_start_state();
+	
+	if(!contains_state(state)) {
+		(*state_to_rule_map)[state] = std::vector<rule *>();
+	}
+	(*state_to_rule_map)[state].push_back(new_rule);
 }
 
 std::vector<rule *> ruleset::get_rules_for_state(int state) {
-	
-	auto result = (*state_to_rule_map).equal_range(state);
-	std::vector<rule *> output = std::vector<rule *>();
-	for(auto member = result.first; member != result.second; member.operator++()) {
-		output.push_back(member.operator*().second);
-	}
-	return output;
+	return (*state_to_rule_map)[state];
 }
 
 std::vector<rule *> ruleset::get_rules_for_state_and_char(int state, char c) {
@@ -67,6 +70,19 @@ bool ruleset::contains_accepting_state(const std::vector<int>& states) {
 	return false;
 }
 
+void ruleset::add_accepting_state(const std::vector<int> &s) {
+	accepting_states.insert(s.begin(), s.end());
+}
+
+
+std::set<int> ruleset::get_accepting_states() const {
+	return accepting_states;
+}
+
+bool ruleset::contains_accepting_state(int state) {
+	return accepting_states.find(state) != accepting_states.end();
+}
+
 void ruleset::add_rule(int start, char c, int end) {
 	rule * created = new char_rule(c, start, end);
 	add_rule(created);
@@ -74,4 +90,15 @@ void ruleset::add_rule(int start, char c, int end) {
 
 void ruleset::add_epsilon_rule(int start, int end) {
 	add_rule(new epsilon_rule(start, end));
+}
+
+std::vector<rule *> ruleset::get_all_rules() const{
+	auto output = std::vector<rule *>();
+	for (const auto &item : *state_to_rule_map) {
+		std::vector<rule *> rule_vector = item.second;
+		for (rule * r : rule_vector) {
+			output.push_back(r);
+		}
+	}
+	return output;
 }

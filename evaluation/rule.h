@@ -6,9 +6,14 @@
 #define REGEXENGINE_RULE_H
 
 
+
+
+class dismantled_rule;
+
 class rule {
 
 private:
+	friend class automaton;
 	int start_state;
 	int end_state;
 	bool force_occur;
@@ -27,6 +32,8 @@ public:
 	int get_end_state() const;
 	
 	bool is_force_occur() const;
+	
+	virtual dismantled_rule* to_dismantled_rule(int new_start, int new_end);
 };
 
 
