@@ -26,6 +26,18 @@ void scanning::lexer::create_next_token() {
 	}
 	char c = current_char();
 	switch (c) {
+		case '[': {
+			int start_index = current_index;
+			bool matched = false;
+			while(!matched && current_index < input.size()) {
+				image += current_char();
+				if(current_char() == ']') matched = true;
+				current_index++;
+			}
+			if(!matched || image == "[]") current = token::ERROR;
+			else current = token(type::t_char_class, image, start_index);
+		}
+			break;
 		case '(':
 			current = token(type::t_lparen, current_index++);
 			break;

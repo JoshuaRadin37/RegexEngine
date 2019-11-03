@@ -183,6 +183,7 @@ template <>
 std::ostream& operator<< <rule *>(std::ostream& os, const std::vector<rule *>& vector) {
 	struct {
 		bool operator() (rule* a, rule* b) {
+			if(a->get_start_state() == b->get_start_state()) return a->get_end_state() < b->get_end_state();
 			return a->get_start_state() < b->get_start_state();
 		}
 	} custom_less;
@@ -202,4 +203,31 @@ void automaton::print_info() const {
 	std::cout << "Accepting states: " << get_accepting_states() << std::endl;
 	std::cout << "Rules: " << std::endl;
 	std::cout << rules->get_all_rules();
+}
+
+bool automaton::has_epsilon_transitions() {
+	for (const auto &item : rules->get_all_rules()) {
+	}
+	return true;
+}
+
+bool automaton::remove_epsilon_transitions() {
+	auto new_rules = new ruleset();
+	auto final_eps_rules = rules->get_rules_that(
+			rule_requirement::is_eps(true) & rule_requirement::is_end(get_accepting_states())
+			);
+	
+	std::set<int> new_accepting_states;
+	for (const auto &final_eps_rule : final_eps_rules) {
+		new_accepting_states.insert(final_eps_rule->get_start_state());
+	}
+	
+	
+	auto eps_rules = rules->get_rules_that(rule_requirement::is_eps(true));
+	
+	
+	
+	
+	
+	return !has_epsilon_transitions();
 }

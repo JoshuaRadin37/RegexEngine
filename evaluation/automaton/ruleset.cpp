@@ -102,3 +102,17 @@ std::vector<rule *> ruleset::get_all_rules() const{
 	}
 	return output;
 }
+
+std::vector<rule *> ruleset::get_rules_that(rule_requirement r) {
+	std::vector<rule *> output;
+	for (const auto &all_rule : get_all_rules()) {
+		if(r.match_requirements(all_rule)) {
+			output.push_back(all_rule);
+		}
+	}
+	return output;
+}
+
+std::vector<rule *> ruleset::operator<<(const rule_requirement& r) {
+	return get_rules_that(r);
+}

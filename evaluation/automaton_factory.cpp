@@ -47,6 +47,26 @@ automaton *automaton_factory::create_union_automaton(automaton *left, automaton 
 	return output;
 }
 
+automaton *automaton_factory::create_union_automaton(const std::vector<automaton *> &vector) {
+	if(vector.empty()) return nullptr;
+	
+	if(vector.size() == 1){
+		return vector[0];
+	} else{
+		auto output = new automaton(new ruleset);
+		int start_state = output->find_unused_state();
+		output->rules->set_start_state(start_state);
+		
+		for (const auto &item : vector) {
+			auto transpose = output->add_automaton(*item);
+			output->rules->add_epsilon_rule(start_state, transpose.initial_state);
+			output->rules->add_accepting_state(transpose.final_states);
+		}
+		
+		return output;
+	}
+}
+
 automaton *automaton_factory::create_concat_automaton(automaton *left, automaton *right) {
 	auto output = new automaton(new ruleset);
 	

@@ -51,19 +51,21 @@ bool parser::parse_expression(category_node *parent) {
 	auto child = new category_node("expression");
 	switch (lexer->get_current().get_token_type()) {
 		
+		case token::type::t_char_class:
 		case token::type::t_atom:
 		case token::type::t_special:
 		case token::type::t_lparen:
-		 {
+		{
 			if(!parse_group(child)) return false;
 			if(!parse_expression_tail(child)) return false;
 			parent->add_child(child);
 		}
-		break;
+			break;
 		case token::type::t_rparen:
 		case token::type::t_union:
 		case token::type::t_star:
 		case token::type::t_EOF:
+	
 			return false;
 	}
 	
@@ -88,6 +90,7 @@ bool parser::parse_group(category_node *parent) {
 	auto child = new category_node("group");
 	switch (lexer->get_current().get_token_type()) {
 		
+		case token::type::t_char_class:
 		case token::type::t_atom:
 		case token::type::t_special:
 		case token::type::t_lparen:
@@ -97,6 +100,7 @@ bool parser::parse_group(category_node *parent) {
 			parent->add_child(child);
 		}
 			break;
+
 		case token::type::t_rparen:
 		case token::type::t_union:
 		case token::type::t_star:
@@ -110,6 +114,8 @@ bool parser::parse_group(category_node *parent) {
 bool parser::parse_group_tail(category_node *parent) {
 	auto child = new category_node("group_tail");
 	switch (lexer->get_current().get_token_type()) {
+		
+		case token::type::t_char_class:
 		case token::type::t_atom:
 		case token::type::t_special:
 		case token::type::t_lparen:
@@ -130,6 +136,7 @@ bool parser::parse_segment(category_node *parent) {
 	auto child = new category_node("segment");
 	switch (lexer->get_current().get_token_type()) {
 		
+		case token::type::t_char_class:
 		case token::type::t_atom:
 		case token::type::t_special:
 		case token::type::t_lparen:
@@ -139,6 +146,7 @@ bool parser::parse_segment(category_node *parent) {
 			parent->add_child(child);
 		}
 			break;
+		
 		case token::type::t_union:
 		case token::type::t_star:
 		case token::type::t_rparen:
@@ -168,6 +176,7 @@ bool parser::parse_X(category_node *parent) {
 	auto child = new category_node("inter");
 	switch (lexer->get_current().get_token_type()) {
 		
+		case token::type::t_char_class:
 		case token::type::t_atom:
 		case token::type::t_special:
 		{
@@ -195,7 +204,7 @@ bool parser::parse_atom(category_node *parent) {
 	auto child = new category_node("atom");
 	
 	switch (lexer->get_current().get_token_type()) {
-		
+		case token::type::t_char_class:
 		case token::type::t_atom:
 		case token::type::t_special: {
 			std::string terminals = lexer->get_current().get_image();
@@ -203,7 +212,7 @@ bool parser::parse_atom(category_node *parent) {
 			child->add_child(terminals_node);
 			parent->add_child(child);
 		}
-		break;
+			break;
 		case type::t_lparen:
 		case type::t_rparen:
 		case type::t_union:

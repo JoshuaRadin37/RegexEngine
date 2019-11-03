@@ -19,10 +19,11 @@ class ast_converter {
 private:
 	static std::string digit_regex;
 	static std::string whitespace_regex;
-	
+	static std::string word_regex;
 	
 	const automaton* digit_automaton;
 	const automaton* whitespace_automaton;
+	const automaton* word_automaton;
 	
 	automaton* convert_node(abstract_syntax_node* node);
 	
@@ -36,7 +37,7 @@ private:
 	automaton* convert_container(uniop_node* node);
 
 public:
-	ast_converter(automaton *digit_automaton, automaton *whitespace_automaton);
+	explicit ast_converter(int i);
 
 public:
 	ast_converter();

@@ -10,6 +10,7 @@
 #include <vector>
 #include <evaluation/rule.h>
 #include <set>
+#include "rule_requirement.h"
 
 class ruleset {
 
@@ -53,5 +54,10 @@ public:
 	
 	
 	std::vector<rule *> get_all_rules() const;
+	
+	
+	std::vector<rule *> get_rules_that(rule_requirement r);
+	std::vector<rule *> operator<<(const rule_requirement& r);
+	
 };
 #endif //REGEXENGINE&_RULESET_H

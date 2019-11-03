@@ -19,6 +19,7 @@ public:
 	
 	static uniop* CLOSURE;
 	static uniop* CONTAINER;
+	static uniop* CHARACTER_CLASS;
 };
 
 
