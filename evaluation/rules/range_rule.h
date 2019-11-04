@@ -10,6 +10,7 @@
 
 class range_rule : public rule {
 private:
+	friend class invert_rule;
 	char min;
 	char max;
 public:

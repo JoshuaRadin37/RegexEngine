@@ -3,7 +3,7 @@
 //
 
 #include "rule.h"
-#include "rules/dismantled_rule.h"
+#include "evaluation/rules/wrapper_rule.h"
 
 int rule::get_start_state() const {
 	return start_state;
@@ -20,8 +20,8 @@ bool rule::is_force_occur() const {
 rule::rule(int start_state, int end_state, bool force_occur) : start_state(start_state), end_state(end_state),
 															   force_occur(force_occur) {}
 
-dismantled_rule *rule::to_dismantled_rule(int new_start, int new_end) {
-	return new dismantled_rule(new_start, new_end, force_occur, this);
+wrapper_rule *rule::to_wrapper_rule(int new_start, int new_end) {
+	return new wrapper_rule(new_start, new_end, force_occur, this);
 }
 
 std::string rule::match_reason() const{

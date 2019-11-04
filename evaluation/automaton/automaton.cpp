@@ -6,7 +6,7 @@
 #include <map>
 #include <set>
 #include <utility>
-#include <evaluation/rules/dismantled_rule.h>
+#include <evaluation/rules/wrapper_rule.h>
 #include <iostream>
 #include "automaton.h"
 
@@ -78,7 +78,7 @@ bool automaton::accept(const std::string &input) {
 				
 				if(rule->match(char_at_position, &chars_consumed, &next_state)) {
 					std::pair<int, int> next_state_position = std::pair<int, int>(next_state, position + chars_consumed);
-					/*if(!rule->is_force_occur()) {
+					/*if(!my_rule->is_force_occur()) {
 						next_state_set.insert(state_and_position);
 					}*/
 					if(rules->contains_accepting_state(next_state) && position + chars_consumed == input.size())
@@ -163,7 +163,7 @@ automaton::automaton_state_transpose automaton::add_automaton(const automaton &o
 	for(rule* r : other.rules->get_all_rules()) {
 		int start_state = old_state_to_new_state_map[r->start_state];
 		int end_state = old_state_to_new_state_map[r->end_state];
-		auto new_rule = r->to_dismantled_rule(start_state, end_state);
+		auto new_rule = r->to_wrapper_rule(start_state, end_state);
 		
 		rules->add_rule(new_rule);
 	}
