@@ -21,6 +21,18 @@ bool parser::consume(type tok) {
 	return output;
 }
 
+bool parser::match(std::string image, token::type t_type) {
+	if(!match(t_type)) return false;
+	auto current_image = lexer->get_current().get_image();
+	return current_image == image;
+}
+
+bool parser::consume(std::string image, token::type t_type) {
+	bool output = match(image, t_type);
+	if(output) ++(*lexer);
+	return output;
+}
+
 token parser::consume() {
 	return (*lexer)++;
 }

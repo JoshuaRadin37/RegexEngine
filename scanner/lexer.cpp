@@ -45,6 +45,18 @@ void scanning::lexer::create_next_token() {
 		case ')':
 			current = token(type::t_rparen, current_index++);
 			break;
+		case '<':
+			current = token(type::t_langle, current_index++);
+			break;
+		case '>':
+			current = token(type::t_rangle, current_index++);
+			break;
+		case '{':
+			current = token(type::t_lcurly, current_index++);
+			break;
+		case '}':
+			current = token(type::t_rcurly, current_index++);
+			break;
 		case '|':
 			current = token(type::t_union, current_index++);
 			break;

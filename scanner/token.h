@@ -20,6 +20,10 @@ public:
 		t_star,
 		t_plus,
 		t_question,
+		t_langle,
+		t_rangle,
+		t_lcurly,
+		t_rcurly,
 		t_EOF
 	};
 

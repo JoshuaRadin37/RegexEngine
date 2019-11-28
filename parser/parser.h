@@ -63,6 +63,8 @@ private:
 	
 	bool match(token::type tok);
 	bool consume(token::type tok);
+	bool match(std::string image, token::type t_type = token::type::t_atom);
+	bool consume(std::string image, token::type t_type = token::type::t_atom);
 	token consume();
 public:
 	
