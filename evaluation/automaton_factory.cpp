@@ -5,7 +5,7 @@
 #include "automaton_factory.h"
 
 automaton *automaton_factory::create_char_automaton(char c) {
-	auto output = new automaton(new ruleset);
+	auto output = new automaton(new ruleset());
 	int start = output->find_unused_state(), end = output->find_unused_state();
 	output->rules->set_start_state(start);
 	output->rules->add_accepting_state(end);
@@ -14,7 +14,7 @@ automaton *automaton_factory::create_char_automaton(char c) {
 }
 
 automaton *automaton_factory::create_epsilon_automaton() {
-	auto output = new automaton(new ruleset);
+	auto output = new automaton(new ruleset());
 	int start = output->find_unused_state(), end = output->find_unused_state();
 	output->rules->set_start_state(start);
 	output->rules->add_accepting_state(end);
@@ -25,14 +25,14 @@ automaton *automaton_factory::create_epsilon_automaton() {
 automaton *automaton_factory::create_rule_automaton(rule *rule) {
 	auto rules = new ruleset();
 	rules->add_rule(rule);
-	rules->add_accepting_state(rule->get_start_state());
+	rules->set_start_state(rule->get_start_state());
 	rules->add_accepting_state(rule->get_end_state());
 	
 	return new automaton(rules);
 }
 
 automaton *automaton_factory::create_union_automaton(automaton *left, automaton *right) {
-	auto output = new automaton(new ruleset);
+	auto output = new automaton(new ruleset());
 	int start_state = output->find_unused_state();
 	auto transpose_left = output->add_automaton(*left);
 	auto transpose_right = output->add_automaton(*right);
@@ -47,8 +47,28 @@ automaton *automaton_factory::create_union_automaton(automaton *left, automaton 
 	return output;
 }
 
+automaton *automaton_factory::create_union_automaton(const std::vector<automaton *> &vector) {
+	if(vector.empty()) return nullptr;
+	
+	if(vector.size() == 1){
+		return vector[0];
+	} else{
+		auto output = new automaton(new ruleset());
+		int start_state = output->find_unused_state();
+		output->rules->set_start_state(start_state);
+		
+		for (const auto &item : vector) {
+			auto transpose = output->add_automaton(*item);
+			output->rules->add_epsilon_rule(start_state, transpose.initial_state);
+			output->rules->add_accepting_state(transpose.final_states);
+		}
+		
+		return output;
+	}
+}
+
 automaton *automaton_factory::create_concat_automaton(automaton *left, automaton *right) {
-	auto output = new automaton(new ruleset);
+	auto output = new automaton(new ruleset());
 	
 	auto transpose_left = output->add_automaton(*left);
 	auto transpose_right = output->add_automaton(*right);
@@ -90,7 +110,7 @@ automaton *automaton_factory::create_string_automaton(const std::string &str) {
 }
 
 automaton *automaton_factory::create_closure_automaton(automaton *a) {
-	auto output = new automaton(new ruleset);
+	auto output = new automaton(new ruleset());
 	int start_state = output->find_unused_state();
 	auto transpose_a = output->add_automaton(*a);
 	int end_state = output->find_unused_state();
@@ -106,4 +126,21 @@ automaton *automaton_factory::create_closure_automaton(automaton *a) {
 	}
 	
 	return output;
+}
+
+automaton *automaton_factory::create_one_or_none_automaton(automaton *a) {
+	
+	auto output = new automaton(new ruleset());
+	auto transpose_a = output->add_automaton(*a);
+	int start_state = transpose_a.initial_state;
+	
+	output->rules->set_start_state(start_state);
+	output->rules->add_accepting_state(transpose_a.final_states);
+	output->rules->add_accepting_state(start_state);
+	
+	return output;
+}
+
+automaton *automaton_factory::create_one_or_more_automaton(automaton *a) {
+	return create_concat_automaton(a, create_closure_automaton(a));
 }

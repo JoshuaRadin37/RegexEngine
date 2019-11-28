@@ -6,7 +6,7 @@
 #include <map>
 #include <set>
 #include <utility>
-#include <evaluation/rules/dismantled_rule.h>
+#include <evaluation/rules/wrapper_rule.h>
 #include <iostream>
 #include "automaton.h"
 
@@ -46,8 +46,11 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<int, int>
 	return os;
 }
 
-bool automaton::accept(const std::string &input) {
+
+bool automaton::accept(const std::string &start_input, bool full_match) {
 	std::vector<std::pair<int, int>> current_state = {std::pair<int, int>(rules->get_start_state(), 0)};
+	std::string input(start_input);
+	
 	
 	auto inital_eps = rules->get_rules_for_state_and_char(rules->get_start_state(), '\0');
 	for (const auto &eps_rule : inital_eps) {
@@ -64,11 +67,16 @@ bool automaton::accept(const std::string &input) {
 		std::cout << "Current states: " << current_state << std::endl;
 		std::set<std::pair<int, int>> next_state_set;
 		for (const auto &state_and_position : current_state){
+			
+			
 			occured_states.insert(state_and_position);
 			
 			
 			int state = state_and_position.first;
 			int position = state_and_position.second;
+			
+			if((!full_match || position == input.length()) && rules->contains_accepting_state(state))
+				return true;
 			
 			char char_at_position = input[position];
 			
@@ -78,7 +86,7 @@ bool automaton::accept(const std::string &input) {
 				
 				if(rule->match(char_at_position, &chars_consumed, &next_state)) {
 					std::pair<int, int> next_state_position = std::pair<int, int>(next_state, position + chars_consumed);
-					/*if(!rule->is_force_occur()) {
+					/*if(!my_rule->is_force_occur()) {
 						next_state_set.insert(state_and_position);
 					}*/
 					if(rules->contains_accepting_state(next_state) && position + chars_consumed == input.size())
@@ -163,7 +171,7 @@ automaton::automaton_state_transpose automaton::add_automaton(const automaton &o
 	for(rule* r : other.rules->get_all_rules()) {
 		int start_state = old_state_to_new_state_map[r->start_state];
 		int end_state = old_state_to_new_state_map[r->end_state];
-		auto new_rule = r->to_dismantled_rule(start_state, end_state);
+		auto new_rule = r->to_wrapper_rule(start_state, end_state);
 		
 		rules->add_rule(new_rule);
 	}
@@ -183,6 +191,7 @@ template <>
 std::ostream& operator<< <rule *>(std::ostream& os, const std::vector<rule *>& vector) {
 	struct {
 		bool operator() (rule* a, rule* b) {
+			if(a->get_start_state() == b->get_start_state()) return a->get_end_state() < b->get_end_state();
 			return a->get_start_state() < b->get_start_state();
 		}
 	} custom_less;
@@ -203,3 +212,31 @@ void automaton::print_info() const {
 	std::cout << "Rules: " << std::endl;
 	std::cout << rules->get_all_rules();
 }
+
+bool automaton::has_epsilon_transitions() {
+	for (const auto &item : rules->get_all_rules()) {
+	}
+	return true;
+}
+
+bool automaton::remove_epsilon_transitions() {
+	auto new_rules = new ruleset();
+	auto final_eps_rules = rules->get_rules_that(
+			rule_requirement::is_eps(true) & rule_requirement::is_end(get_accepting_states())
+			);
+	
+	std::set<int> new_accepting_states;
+	for (const auto &final_eps_rule : final_eps_rules) {
+		new_accepting_states.insert(final_eps_rule->get_start_state());
+	}
+	
+	
+	auto eps_rules = rules->get_rules_that(rule_requirement::is_eps(true));
+	
+	
+	
+	
+	
+	return !has_epsilon_transitions();
+}
+

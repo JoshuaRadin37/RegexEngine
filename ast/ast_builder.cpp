@@ -49,8 +49,10 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 		} else {
 			return convert_category_node_to_ast_node(node->get_child("atom"));
 		}
-	}
-	abstract_syntax_node *node_as_ast_node = convert_category_node_to_ast_node(
+	}else if(category == "expression" && node->num_children() == 0)
+			return create_atomic_node(token(token::type::t_special, "\\e", 0));
+	
+	abstract_syntax_node *inner_node_as_ast_node = convert_category_node_to_ast_node(
 			(category_node *) node->get_child(0));
 	
 	if(category == "expression" ||
@@ -62,26 +64,50 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 			auto other_parse_node = (category_node *) ((category_node* )node->get_child(1))->get_child(0);
 			auto other_as_ast_node = convert_category_node_to_ast_node(other_parse_node);
 			binop op = *(binop *) category_to_operator(category);
-			return create_binop_node(op, node_as_ast_node, other_as_ast_node);
+			return create_binop_node(op, inner_node_as_ast_node, other_as_ast_node);
 		} // skip to next
 		else {
-			return node_as_ast_node;
+			return inner_node_as_ast_node;
 		}
 	} else if(category == "segment") {
 		
-		if(node->num_children() == 2) { // has closure
-			uniop op = *(uniop *) category_to_operator(category);
+		if(node->num_children() == 2) { // has duplication
+			abstract_syntax_node* built = nullptr;
+			std::vector<token> dup_tok_stack;
+			category_node* ptr = node;
+			do {
+				try {
+					ptr = ptr->get_child("segment_tail");
+					token t = ((token_node *) ptr->get_child(0))->get_my_token();
+					dup_tok_stack.push_back(t);
+				} catch (const category_node::category_not_found_exception& e) {
+					break;
+				}
+			} while(true);
 			
-			return create_uniop_node(op, node_as_ast_node);
+			
+			for (const auto &tok : dup_tok_stack) {
+				
+				uniop op = *(uniop *) category_to_operator(category, tok);
+				if(built == nullptr) {
+					built = create_uniop_node(op, inner_node_as_ast_node);
+				} else {
+					built = create_uniop_node(op, built);
+				}
+			}
+			
+			
+			
+			return built;
 		}
 		
-		return node_as_ast_node;
+		return inner_node_as_ast_node;
 	}
 	
 	return nullptr;
 }
 
-op * ast::ast_builder::category_to_operator(const std::string &category) {
+op * ast::ast_builder::category_to_operator(const std::string &category, const token &tok) {
 	if(category == "expression") {
 		return binop::UNION;
 	}
@@ -89,7 +115,12 @@ op * ast::ast_builder::category_to_operator(const std::string &category) {
 		return binop::CONCAT;
 	}
 	if(category == "segment" || category == "segment_tail") {
-		return uniop::CLOSURE;
+		if(tok.get_token_type() == token::type::t_star)
+			return uniop::CLOSURE;
+		if(tok.get_token_type() == token::type::t_question)
+			return uniop::NONE_OR_ONE;
+		if(tok.get_token_type() == token::type::t_plus)
+			return uniop::ONE_OR_MORE;
 	}
 	if(category == "inter") {
 		return uniop::CONTAINER;

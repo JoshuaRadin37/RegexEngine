@@ -14,12 +14,17 @@ public:
 	static automaton* create_epsilon_automaton();
 	
 	static automaton* create_rule_automaton(rule* rule);
+	
 	static automaton* create_union_automaton(automaton* left, automaton* right);
+	static automaton* create_union_automaton(const std::vector<automaton *>& vector);
+	
 	static automaton* create_concat_automaton(automaton* left, automaton* right);
 	static automaton* create_concat_automaton(const std::vector<automaton *>& a);
 	static automaton* create_string_automaton(const std::string& str);
-	static automaton* create_closure_automaton(automaton* a);
 	
+	static automaton* create_closure_automaton(automaton* a);
+	static automaton* create_one_or_none_automaton(automaton* a);
+	static automaton* create_one_or_more_automaton(automaton* a);
 };
 
 

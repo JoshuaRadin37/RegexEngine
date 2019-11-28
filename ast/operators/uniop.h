@@ -18,7 +18,10 @@ public:
 	
 	
 	static uniop* CLOSURE;
+	static uniop* NONE_OR_ONE;
+	static uniop* ONE_OR_MORE;
 	static uniop* CONTAINER;
+	static uniop* CHARACTER_CLASS;
 };
 
 

@@ -35,7 +35,7 @@ namespace ast {
 		atomic_node* create_atomic_node(token tok);
 		
 		abstract_syntax_node* convert_category_node_to_ast_node(category_node* node);
-		op * category_to_operator(const std::string& category);
+		op *category_to_operator(const std::string &category, const token &tok = token::ERROR);
 	};
 	
 }

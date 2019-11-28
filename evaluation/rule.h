@@ -8,7 +8,7 @@
 
 #include <string>
 
-class dismantled_rule;
+class wrapper_rule;
 
 class rule {
 
@@ -33,7 +33,7 @@ public:
 	
 	bool is_force_occur() const;
 	
-	virtual dismantled_rule* to_dismantled_rule(int new_start, int new_end);
+	virtual wrapper_rule* to_wrapper_rule(int new_start, int new_end);
 	
 	virtual std::string match_reason() const;
 	std::string to_string() const;

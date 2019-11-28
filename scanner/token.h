@@ -13,10 +13,13 @@ public:
 	enum class type {
 		t_atom, // has image
 		t_special, // those in form of '\c'
+		t_char_class,
 		t_lparen,
 		t_rparen,
 		t_union,
 		t_star,
+		t_plus,
+		t_question,
 		t_EOF
 	};
 

@@ -10,6 +10,7 @@
 #include <vector>
 #include <evaluation/rule.h>
 #include <set>
+#include "rule_requirement.h"
 
 class ruleset {
 
@@ -53,5 +54,15 @@ public:
 	
 	
 	std::vector<rule *> get_all_rules() const;
+	
+	std::vector<int> epsilon_closure(int state) const;
+	
+	std::vector<rule *> get_rules_that(rule_requirement r) const;
+	inline std::vector<rule *> get_epsilon_rules() const {
+		return get_rules_that(rule_requirement::is_eps(true));
+	}
+	
+	std::vector<rule *> operator<<(const rule_requirement& r);
+	
 };
 #endif //REGEXENGINE&_RULESET_H
