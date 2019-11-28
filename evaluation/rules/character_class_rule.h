@@ -21,6 +21,8 @@ public:
 						 bool invert);
 	
 	virtual bool match(char input, int *chars_consumed_ptr, int *next_state_ptr) const override;
+	
+	virtual std::string match_reason() const override;
 };
 
 

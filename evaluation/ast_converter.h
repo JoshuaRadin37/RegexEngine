@@ -34,6 +34,9 @@ private:
 	automaton* convert_concat(binop_node* node);
 	automaton* convert_union(binop_node *node);
 	automaton* convert_closure(uniop_node* node);
+	automaton* convert_one_or_none(uniop_node* node);
+	
+	automaton* convert_one_or_more(uniop_node* node);
 	automaton* convert_container(uniop_node* node);
 
 public:

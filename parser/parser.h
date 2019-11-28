@@ -28,6 +28,7 @@ Alternation |
 
 
 E -> <G><ET>
+  -> eps
 ET -> | <E>
    -> eps
 G -> <S><GT>

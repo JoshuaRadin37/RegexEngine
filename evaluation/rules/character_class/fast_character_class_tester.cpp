@@ -7,10 +7,6 @@
 
 fast_character_class_tester::fast_character_class_tester(const character_class &c_class) : c_class(c_class) {}
 
-fast_character_class_tester::~fast_character_class_tester() {
-	delete [] checks;
-}
-
 void fast_character_class_tester::construct() {
 	char min = CHAR_MAX, max = CHAR_MIN;
 	
@@ -23,17 +19,21 @@ void fast_character_class_tester::construct() {
 		}
 	}
 	
+	
 	subtraction = -min;
 	if(min > max) return;
+	this->min_char = min;
+	this->max_char = max;
 	unsigned int size = max - min + 1;
-	checks = new bool[size];
+	checks = new std::vector<bool>(size);
+	
 	for (unsigned int i = 0; i < size; ++i) {
-		checks[i] = false;
+		(*checks)[i] = false;
 	}
 	
 	for (const auto &c : c_class) {
-		int modified = ((int) c) - subtraction;
-		checks[modified] = true;
+		int modified = ((int) c) + subtraction;
+		(*checks)[modified] = true;
 	}
 	
 	constructed = true;
@@ -41,10 +41,16 @@ void fast_character_class_tester::construct() {
 
 bool fast_character_class_tester::check(char c) const{
 	if(!constructed) return false;
-	int modified = ((int) c) - subtraction;
-	return checks[modified];
+	if(c < min_char) return false;
+	if(c > max_char) return false;
+	int modified = ((int) c) + subtraction;
+	return (*checks)[modified];
 }
 
 bool fast_character_class_tester::is_constructed() const {
 	return constructed;
+}
+
+fast_character_class_tester::~fast_character_class_tester() {
+	delete checks;
 }

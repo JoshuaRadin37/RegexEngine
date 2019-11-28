@@ -33,7 +33,7 @@ G -> <S><GT>
 GT -> <G>
    -> eps
 S -> <X><ST>
-ST -> *<ST>
+ST -> (*|?|+)<ST>
    -> eps
 X -> (<E>)
   -> <A>
@@ -61,12 +61,17 @@ bool parser::parse_expression(category_node *parent) {
 			parent->add_child(child);
 		}
 			break;
+		case token::type::t_EOF:
 		case token::type::t_rparen:
+			parent->add_child(child);
+			break;
+		case type::t_plus:
+		case type::t_question:
 		case token::type::t_union:
 		case token::type::t_star:
-		case token::type::t_EOF:
-	
+		
 			return false;
+
 	}
 	
 	return true;
@@ -104,6 +109,8 @@ bool parser::parse_group(category_node *parent) {
 		case token::type::t_rparen:
 		case token::type::t_union:
 		case token::type::t_star:
+		case type::t_plus:
+		case type::t_question:
 		case token::type::t_EOF:
 			return false;
 	}
@@ -149,6 +156,8 @@ bool parser::parse_segment(category_node *parent) {
 		
 		case token::type::t_union:
 		case token::type::t_star:
+		case type::t_plus:
+		case type::t_question:
 		case token::type::t_rparen:
 		case token::type::t_EOF:
 			return false;
@@ -161,10 +170,14 @@ bool parser::parse_segment_tail(category_node *parent) {
 	auto child = new category_node("segment_tail");
 	switch (lexer->get_current().get_token_type()) {
 		case token::type::t_star:
-			
-			consume(type::t_star);
-			if(!parse_segment_tail(child)) return false;
+		case type::t_plus:
+		case type::t_question: {
+			const token &token = consume();
+			auto node = new token_node(token);
+			child->add_child(node);
+			if (!parse_segment_tail(child)) return false;
 			parent->add_child(child);
+		}
 		default:
 			break;
 	}
@@ -193,6 +206,8 @@ bool parser::parse_X(category_node *parent) {
 		case token::type::t_rparen:
 		case token::type::t_union:
 		case token::type::t_star:
+		case type::t_plus:
+		case type::t_question:
 		case token::type::t_EOF:
 			return false;
 	}
@@ -217,6 +232,8 @@ bool parser::parse_atom(category_node *parent) {
 		case type::t_rparen:
 		case type::t_union:
 		case type::t_star:
+		case type::t_plus:
+		case type::t_question:
 		case type::t_EOF:
 			return false;
 	}

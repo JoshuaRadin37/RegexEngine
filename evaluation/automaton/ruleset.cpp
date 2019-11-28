@@ -103,7 +103,7 @@ std::vector<rule *> ruleset::get_all_rules() const{
 	return output;
 }
 
-std::vector<rule *> ruleset::get_rules_that(rule_requirement r) {
+std::vector<rule *> ruleset::get_rules_that(rule_requirement r) const{
 	std::vector<rule *> output;
 	for (const auto &all_rule : get_all_rules()) {
 		if(r.match_requirements(all_rule)) {
@@ -115,4 +115,16 @@ std::vector<rule *> ruleset::get_rules_that(rule_requirement r) {
 
 std::vector<rule *> ruleset::operator<<(const rule_requirement& r) {
 	return get_rules_that(r);
+}
+
+std::vector<int> ruleset::epsilon_closure(int state) const {
+	std::vector<int> output;
+	
+	auto rules = get_epsilon_rules();
+	
+	
+	
+	
+	
+	return output;
 }

@@ -58,3 +58,11 @@ const character_class::iterator character_class::end() const {
 	output.index = output.all_chars.size();
 	return output;
 }
+
+std::string character_class::to_string() const {
+	std::string output = "[";
+	for (const auto &item : ranges) {
+		output += item->to_string();
+	}
+	return output + "]";
+}

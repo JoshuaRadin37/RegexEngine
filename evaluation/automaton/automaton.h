@@ -25,12 +25,15 @@ protected:
 	std::vector<int> get_used_states() const;
 	int get_start_state() const;
 	std::vector<int> get_accepting_states() const;
+	
+	
+	
 public:
 	explicit automaton(ruleset *rules);
 	
 	automaton() : automaton(new ruleset()) {}
 	
-	bool accept(const std::string& input);
+	bool accept(const std::string &start_input, bool full_match);
 	
 	class automaton_state_transpose {
 	public:

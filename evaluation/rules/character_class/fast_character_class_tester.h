@@ -11,7 +11,7 @@
 class fast_character_class_tester {
 private:
 	character_class c_class;
-	bool * checks = nullptr;
+	std::vector<bool>* checks;
 	
 	int subtraction = 0;
 	char min_char = 0;

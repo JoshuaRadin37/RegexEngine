@@ -18,6 +18,8 @@ public:
 		t_rparen,
 		t_union,
 		t_star,
+		t_plus,
+		t_question,
 		t_EOF
 	};
 

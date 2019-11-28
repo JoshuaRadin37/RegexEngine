@@ -19,3 +19,7 @@ bool char_rule::match(char input, int *chars_consumed_ptr, int *next_state_ptr) 
 std::string char_rule::match_reason() const {
 	return std::string() + c;
 }
+
+char char_rule::get_c() const {
+	return c;
+}

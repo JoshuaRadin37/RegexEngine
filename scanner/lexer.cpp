@@ -25,6 +25,7 @@ void scanning::lexer::create_next_token() {
 		return;
 	}
 	char c = current_char();
+	image += c;
 	switch (c) {
 		case '[': {
 			int start_index = current_index;
@@ -47,20 +48,25 @@ void scanning::lexer::create_next_token() {
 		case '|':
 			current = token(type::t_union, current_index++);
 			break;
+		case '+':
+			current = token(type::t_plus, image,current_index++);
+			break;
+		case '?':
+			current = token(type::t_question, image,current_index++);
+			break;
 		case '*':
-			current = token(type::t_star, current_index++);
+			current = token(type::t_star, image,current_index++);
 			break;
 		case '\\': {
 			int start_index = current_index;
 			current_index++;
 			char next = current_char();
 			current_index++;
-			image = string() + c + next;
+			image += next;
 			current = token(type::t_special, image, start_index);
 			break;
 		}
 		default:
-			image += c;
 			current = token(type::t_atom, image, current_index++);
 			break;
 	}
@@ -88,7 +94,22 @@ const token &scanning::lexer::operator*() {
 	return current;
 }
 
+
+
+static void replace(std::string& str, const std::string& from, const std::string& to) {
+	if(from.empty())
+		return;
+	size_t start_pos = 0;
+	while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+	}
+}
+
 scanning::lexer::lexer(const std::string &input) : input(input) {
+	replace(this->input, std::string("()"), std::string("\\e"));
+	replace(this->input, std::string("(|"), std::string("(\\e|"));
+	replace(this->input, std::string("|)"), std::string("|\\e)"));
 	create_next_token();
 }
 

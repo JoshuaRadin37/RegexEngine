@@ -24,3 +24,7 @@ bool character_class_rule::match(char input, int *chars_consumed_ptr, int *next_
 	}
 	return output;
 }
+
+std::string character_class_rule::match_reason() const {
+	return std::string("in class ") + clazz.to_string();
+}

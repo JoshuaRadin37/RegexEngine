@@ -7,11 +7,12 @@
 
 #include <iterator>
 #include <vector>
+#include "comparable.h"
 
 class character_class{
 private:
 	template <typename T>
-	class range {
+	class range{
 	public:
 		const T min;
 		const T max;
@@ -48,6 +49,7 @@ private:
 			
 		};
 		
+		
 		iterator begin() const {
 			return iterator(min);
 		}
@@ -55,12 +57,20 @@ private:
 		iterator end() const {
 			return iterator(max + 1);
 		}
+		
+		virtual std::string to_string() const {
+			return std::string() + min + "-" + max;
+		}
 	};
 	
 	template <typename T> class singleton : public range<T> {
 	public:
 		explicit singleton(const T o) : range<T>(o, o) {
 		
+		}
+		
+		std::string to_string() const {
+			return std::string() + this->min;
 		}
 	};
 
@@ -89,6 +99,8 @@ public:
 	
 	iterator begin() const;
 	const iterator end() const;
+	
+	std::string to_string() const;
 };
 
 

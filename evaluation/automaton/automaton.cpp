@@ -46,8 +46,11 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<int, int>
 	return os;
 }
 
-bool automaton::accept(const std::string &input) {
+
+bool automaton::accept(const std::string &start_input, bool full_match) {
 	std::vector<std::pair<int, int>> current_state = {std::pair<int, int>(rules->get_start_state(), 0)};
+	std::string input(start_input);
+	
 	
 	auto inital_eps = rules->get_rules_for_state_and_char(rules->get_start_state(), '\0');
 	for (const auto &eps_rule : inital_eps) {
@@ -64,11 +67,16 @@ bool automaton::accept(const std::string &input) {
 		std::cout << "Current states: " << current_state << std::endl;
 		std::set<std::pair<int, int>> next_state_set;
 		for (const auto &state_and_position : current_state){
+			
+			
 			occured_states.insert(state_and_position);
 			
 			
 			int state = state_and_position.first;
 			int position = state_and_position.second;
+			
+			if((!full_match || position == input.length()) && rules->contains_accepting_state(state))
+				return true;
 			
 			char char_at_position = input[position];
 			
@@ -231,3 +239,4 @@ bool automaton::remove_epsilon_transitions() {
 	
 	return !has_epsilon_transitions();
 }
+
