@@ -55,11 +55,14 @@ public:
 	
 	std::vector<rule *> get_all_rules() const;
 	
-	std::vector<int> epsilon_closure(int state) const;
+	std::set<int> epsilon_closure(int state) const;
 	
 	std::vector<rule *> get_rules_that(rule_requirement r) const;
 	inline std::vector<rule *> get_epsilon_rules() const {
-		return get_rules_that(rule_requirement::is_eps(true));
+		return get_rules_that(rule_requirement::eps);
+	}
+	inline std::vector<rule *> get_epsilon_rules(int start_state) const {
+		return get_rules_that(rule_requirement::eps & rule_requirement::is_start(start_state));
 	}
 	
 	std::vector<rule *> operator<<(const rule_requirement& r);

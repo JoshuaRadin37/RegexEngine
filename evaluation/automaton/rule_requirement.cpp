@@ -43,6 +43,14 @@ rule_requirement rule_requirement::is_end(std::vector<int> e) {
 	return rule_requirement(e.front(), false) & is_start(sub);
 }
 
+rule_requirement rule_requirement::is_start(std::initializer_list<int> s) {
+	return is_start(std::vector<int>(s));
+}
+
+rule_requirement rule_requirement::is_end(std::initializer_list<int> e) {
+	return is_end(std::vector<int>(e));
+}
+
 const rule_requirement rule_requirement::operator&(const rule_requirement &other) const {
 	rule_requirement output(is_epsilon | other.is_epsilon);
 	
@@ -55,10 +63,21 @@ const rule_requirement rule_requirement::operator&(const rule_requirement &other
 	return output;
 }
 
+const rule_requirement rule_requirement::operator!() const {
+	rule_requirement output = rule_requirement(is_epsilon);
+	output.start_states = std::set<int>(start_states);
+	output.end_states = std::set<int>(end_states);
+	
+	output.invert = !output.invert;
+	return output;
+}
+
 rule_requirement::rule_requirement() {}
 
+rule_requirement rule_requirement::eps = rule_requirement::is_eps(true);
+
 bool rule_requirement::match_requirements(rule *rule) {
-	bool eps_match = false, start_match, end_match;
+	bool eps_match = false, start_match = true, end_match = true;
 	switch(is_epsilon) {
 		case 0b01:
 			eps_match = rule->is_force_occur();
@@ -71,9 +90,12 @@ bool rule_requirement::match_requirements(rule *rule) {
 			break;
 	}
 	
-	start_match = start_states.find(rule->get_start_state()) != start_states.end();
-	end_match = end_states.find(rule->get_end_state()) != end_states.end();
+	if (!start_states.empty())
+		start_match = start_states.find(rule->get_start_state()) != start_states.end();
+	
+	if(!end_states.empty())
+		end_match = end_states.find(rule->get_end_state()) != end_states.end();
 	
 	
-	return eps_match && start_match && end_match;
+	return (eps_match && start_match && end_match) == !invert;
 }

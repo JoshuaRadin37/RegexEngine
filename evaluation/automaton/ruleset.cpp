@@ -4,6 +4,7 @@
 
 #include <evaluation/rules/char_rule.h>
 #include <evaluation/rules/epsilon_rule.h>
+#include <queue>
 #include "ruleset.h"
 
 ruleset::~ruleset() {
@@ -117,14 +118,33 @@ std::vector<rule *> ruleset::operator<<(const rule_requirement& r) {
 	return get_rules_that(r);
 }
 
-std::vector<int> ruleset::epsilon_closure(int state) const {
-	std::vector<int> output;
+std::set<int> ruleset::epsilon_closure(int state) const {
+	std::set<int> visited;
 	
-	auto rules = get_epsilon_rules();
+	std::queue<int> queue;
+	queue.push(state);
+	
+	do {
+	
+		int current = queue.front();
+		queue.pop();
+		visited.insert(current);
+		
+		std::vector<rule *> eps_rules = get_epsilon_rules(current);
+		
+		for (const auto &eps_rule : eps_rules) {
+			int next_state = eps_rule->get_end_state();
+			
+			if (visited.find(next_state) == visited.end()) {
+				queue.push(next_state);
+			}
+		}
+		
+		
+	} while (!queue.empty());
 	
 	
 	
 	
-	
-	return output;
+	return visited;
 }

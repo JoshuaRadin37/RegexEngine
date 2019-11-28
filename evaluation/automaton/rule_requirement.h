@@ -11,6 +11,8 @@
 #include <vector>
 
 class rule_requirement {
+private:
+	bool invert = false;
 	unsigned int is_epsilon = 0b11;
 	std::set<int> start_states;
 	std::set<int> end_states;
@@ -25,10 +27,15 @@ public:
 	static rule_requirement is_end(int e);
 	static rule_requirement is_start(std::vector<int> s);
 	static rule_requirement is_end(std::vector<int> e);
+	static rule_requirement is_start(std::initializer_list<int> s);
+	static rule_requirement is_end(std::initializer_list<int> e);
+	
+	static rule_requirement eps;
 	
 	static rule_requirement is_eps(bool e);
 	
 	const rule_requirement operator& (const rule_requirement& other) const;
+	const rule_requirement operator! () const;
 	
 	bool match_requirements(rule * rule);
 };
