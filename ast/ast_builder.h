@@ -32,7 +32,7 @@ namespace ast {
 		
 	private:
 		binop_node* create_binop_node(binop op, abstract_syntax_node* left, abstract_syntax_node* right);
-		uniop_node* create_uniop_node(uniop op, abstract_syntax_node* affected);
+		uniop_node* create_uniop_node(uniop *op, abstract_syntax_node* affected);
 		atomic_node* create_atomic_node(token tok);
 		
 		abstract_syntax_node* convert_category_node_to_ast_node(category_node* node);

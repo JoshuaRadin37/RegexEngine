@@ -7,6 +7,7 @@
 
 
 #include <evaluation/automaton/automaton.h>
+#include <ast/operators/quantifier_info.h>
 
 class automaton_factory {
 public:
@@ -25,6 +26,7 @@ public:
 	static automaton* create_closure_automaton(automaton* a);
 	static automaton* create_one_or_none_automaton(automaton* a);
 	static automaton* create_one_or_more_automaton(automaton* a);
+	static automaton *create_quantifier_automaton(automaton *a, quantifier_info info);
 };
 
 

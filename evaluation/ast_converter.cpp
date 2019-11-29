@@ -6,6 +6,7 @@
 #include <evaluation/rules/range_rule.h>
 #include <evaluation/rules/character_class/character_class.h>
 #include <evaluation/rules/character_class_rule.h>
+#include <ast/operators/quantifier_op.h>
 #include "ast_converter.h"
 #include "automaton_factory.h"
 #include "full_automaton_generator.h"
@@ -34,14 +35,17 @@ automaton *ast_converter::convert_binop(binop_node *node) {
 }
 
 automaton *ast_converter::convert_uniop(uniop_node *node) {
-	if(node->get_op() == *uniop::CLOSURE)
+	if(node->get_op() == uniop::CLOSURE)
 		return convert_closure(node);
-	else if(node->get_op() == *uniop::CONTAINER)
+	else if(node->get_op() == uniop::CONTAINER)
 		return convert_container(node);
-	else if(node->get_op() == *uniop::NONE_OR_ONE)
+	else if(node->get_op() == uniop::NONE_OR_ONE)
 		return convert_one_or_none(node);
-	else if(node->get_op() == *uniop::ONE_OR_MORE)
+	else if(node->get_op() == uniop::ONE_OR_MORE)
 		return convert_one_or_more(node);
+	else if(auto* q_op = dynamic_cast<quantifier_op*>(node->get_op())) {
+		return convert_quantifier(q_op->get_info(), node->get_internal());
+	}
 	
 	return nullptr;
 }
@@ -145,6 +149,13 @@ automaton *ast_converter::convert_container(uniop_node *node) {
 automaton *ast_converter::convert_expression(abstract_syntax_node *node) {
 	return convert_node(node);
 }
+
+automaton *ast_converter::convert_quantifier(quantifier_info info, abstract_syntax_node *child) {
+	automaton* next = convert_node(child);
+	return automaton_factory::create_quantifier_automaton(next, info);
+}
+
+
 
 ast_converter::ast_converter() {
 	auto bootstrap = new ast_converter(0);

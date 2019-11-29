@@ -13,7 +13,9 @@ class quantifier_op : public uniop {
 private:
 	quantifier_info info;
 public:
-	quantifier_op(const std::string &operator_string, const quantifier_info &info);
+	quantifier_op(std::string operator_string, const quantifier_info &info);
+	
+	const quantifier_info &get_info() const;
 };
 
 

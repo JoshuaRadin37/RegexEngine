@@ -144,3 +144,44 @@ automaton *automaton_factory::create_one_or_none_automaton(automaton *a) {
 automaton *automaton_factory::create_one_or_more_automaton(automaton *a) {
 	return create_concat_automaton(a, create_closure_automaton(a));
 }
+
+automaton *automaton_factory::create_quantifier_automaton(automaton *a, quantifier_info info) {
+	
+	
+	if(info.exactly) {
+		if(info.min == 0) {
+			return create_epsilon_automaton();
+		} else {
+			std::vector<automaton *> rules(info.min);
+			for (int i = 0; i < info.min; ++i) {
+				rules[i] = a;
+			}
+			return create_concat_automaton(rules);
+		}
+	} else {
+		if(!info.has_max && !info.has_min) return create_closure_automaton(a);
+		int min = info.has_min? info.min : 0;
+		int max = info.has_max? info.max : min;
+		
+		auto output = new automaton(new ruleset());
+		int start_state = output->find_unused_state();
+		output->rules->set_start_state(start_state);
+		std::vector<int> last_states = {start_state};
+		for (int i = 0; i < max; ++i) {
+			auto state_transpose = output->add_automaton(*a);
+			
+			for (auto state : last_states) {
+				output->rules->add_epsilon_rule(state, state_transpose.initial_state);
+			}
+			
+			if(i >= min) {
+				output->rules->add_accepting_state(last_states);
+			}
+			last_states = state_transpose.final_states;
+		}
+		output->rules->add_accepting_state(last_states);
+		if(!info.has_max) {
+			return create_concat_automaton(output, a);
+		} return output;
+	}
+}

@@ -29,7 +29,7 @@ binop_node *ast::ast_builder::create_binop_node(binop op, abstract_syntax_node *
 	return new binop_node(left, right, op);
 }
 
-uniop_node *ast::ast_builder::create_uniop_node(uniop op, abstract_syntax_node *affected) {
+uniop_node *ast::ast_builder::create_uniop_node(uniop *op, abstract_syntax_node *affected) {
 	return new uniop_node(affected, op);
 }
 
@@ -45,7 +45,7 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 	}else if(category == "inter") {
 		
 		if(node->has_child_category("expression")) {
-			uniop op = *(uniop *) category_to_operator(category);
+			auto op = (uniop *) category_to_operator(category);
 			category_node* next = node->get_child("expression");
 			return create_uniop_node(op, convert_category_node_to_ast_node(next));
 		} else {
@@ -82,13 +82,24 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 				ptr = ptr->get_child("segment_tail");
 				
 				if(ptr->has_child_category("quantifier")) {
-					bool has_min, has_max;
-					int min, max;
+					bool has_min = false, has_max = false;
+					int min = 0, max = 0;
+					bool is_exact = false;
 					auto q_node = ptr->get_child("quantifier");
 					if(q_node->has_child_category("int")) {
 						has_min = true;
-						
+						min = std::stoi(q_node->get_child("int")->get_terminals());
 					}
+					if(q_node->has_child_category("quantifier_tail")) {
+						if(q_node->get_child("quantifier_tail")->has_child_category("int")) {
+							has_max = true;
+							max = std::stoi(q_node->get_child("quantifier_tail")->get_child("int")->get_terminals());
+							
+						}
+					} else is_exact = true;
+					
+					quantifier_info info(min, max, has_min, has_max, is_exact);
+					dup_tok_list.emplace_back(info);
 				} else {
 					token t = ((token_node *) ptr->get_child(0))->get_my_token();
 					dup_tok_list.emplace_back(&t);
@@ -107,13 +118,14 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 				if(quant.is_tok)
 					op = (uniop *) category_to_operator(category, *quant.tok);
 				else
-					op = new quantifier_op(ptr->get_terminals(), quant.info);
+					
+					op = new quantifier_op(quant.info.to_string(), quant.info);
 				
 				
 				if(built_ops == nullptr) {
-					built_ops = create_uniop_node(*op, inner_node_as_ast_node);
+					built_ops = create_uniop_node(op, inner_node_as_ast_node);
 				} else {
-					built_ops = create_uniop_node(*op, built_ops);
+					built_ops = create_uniop_node(op, built_ops);
 				}
 			}
 			

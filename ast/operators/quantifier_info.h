@@ -13,14 +13,16 @@ struct quantifier_info {
 	const int max;
 	const bool has_min;
 	const bool has_max;
-
-private:
-	quantifier_info(int min, int max, bool has_min, bool has_max);
+	const bool exactly;
+	quantifier_info(int min, int max, bool has_min, bool has_max, bool exactly);
 	
+	static quantifier_info exactly_q(int exact);
 	static quantifier_info min_q(int min);
 	static quantifier_info max_q(int max);
 	static quantifier_info min_and_max_q(int min, int max);
 	static quantifier_info none();
+	
+	std::string to_string() const;
 };
 
 struct quantifier {

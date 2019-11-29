@@ -11,6 +11,7 @@
 #include <ast/nodes/binop_node.h>
 #include <ast/nodes/uniop_node.h>
 #include <ast/nodes/atomic_node.h>
+#include <ast/operators/quantifier_info.h>
 
 class ast_converter {
 
@@ -35,8 +36,9 @@ private:
 	automaton* convert_union(binop_node *node);
 	automaton* convert_closure(uniop_node* node);
 	automaton* convert_one_or_none(uniop_node* node);
-	
 	automaton* convert_one_or_more(uniop_node* node);
+	automaton* convert_quantifier(quantifier_info info, abstract_syntax_node* child);
+	
 	automaton* convert_container(uniop_node* node);
 
 public:

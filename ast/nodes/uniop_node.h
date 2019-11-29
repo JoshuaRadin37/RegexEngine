@@ -11,9 +11,9 @@
 class uniop_node : public abstract_syntax_node {
 private:
 	abstract_syntax_node* internal;
-	uniop op;
+	uniop* op;
 public:
-	uniop_node(abstract_syntax_node *internal, const uniop &op);
+	uniop_node(abstract_syntax_node *internal, uniop *op);
 	
 	virtual std::string postfix() const override;
 	
@@ -25,7 +25,7 @@ public:
 	
 	abstract_syntax_node *get_internal() const;
 	
-	const uniop &get_op() const;
+	uniop * get_op() const;
 };
 
 
