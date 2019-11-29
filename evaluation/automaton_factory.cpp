@@ -113,6 +113,7 @@ automaton *automaton_factory::create_closure_automaton(automaton *a) {
 	auto output = new automaton(new ruleset());
 	int start_state = output->find_unused_state();
 	auto transpose_a = output->add_automaton(*a);
+	/*
 	int end_state = output->find_unused_state();
 	
 	output->rules->set_start_state(start_state);
@@ -122,6 +123,14 @@ automaton *automaton_factory::create_closure_automaton(automaton *a) {
 	output->rules->add_epsilon_rule(start_state, end_state);
 	for (const auto &state : transpose_a.final_states) {
 		output->rules->add_epsilon_rule(state, end_state);
+		output->rules->add_epsilon_rule(state, transpose_a.initial_state);
+	}
+	 */
+	output->rules->set_start_state(start_state);
+	output->rules->add_epsilon_rule(start_state, transpose_a.initial_state);
+	output->rules->add_accepting_state(start_state);
+	output->rules->add_accepting_state(transpose_a.final_states);
+	for (const auto &state : transpose_a.final_states) {
 		output->rules->add_epsilon_rule(state, transpose_a.initial_state);
 	}
 	
@@ -181,7 +190,7 @@ automaton *automaton_factory::create_quantifier_automaton(automaton *a, quantifi
 		}
 		output->rules->add_accepting_state(last_states);
 		if(!info.has_max) {
-			return create_concat_automaton(output, a);
+			return create_concat_automaton(output, create_closure_automaton(a));
 		} return output;
 	}
 }

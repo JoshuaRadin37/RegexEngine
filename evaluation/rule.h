@@ -10,6 +10,9 @@
 
 class wrapper_rule;
 
+
+
+
 class rule {
 
 private:

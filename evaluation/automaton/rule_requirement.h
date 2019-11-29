@@ -13,12 +13,13 @@
 class rule_requirement {
 private:
 	bool invert = false;
-	unsigned int is_epsilon = 0b11;
+	unsigned int is_epsilon = 0b00;
 	std::set<int> start_states;
 	std::set<int> end_states;
 protected:
 	rule_requirement();
 	explicit rule_requirement(bool backing_field_eps);
+	explicit rule_requirement(int backing_field_eps);
 	explicit rule_requirement(int backing_field_int, bool start);
 	
 

@@ -8,6 +8,7 @@
 #include <utility>
 #include <evaluation/rules/wrapper_rule.h>
 #include <iostream>
+#include <queue>
 #include "automaton.h"
 
 template <typename T>
@@ -214,29 +215,101 @@ void automaton::print_info() const {
 }
 
 bool automaton::has_epsilon_transitions() {
-	for (const auto &item : rules->get_all_rules()) {
+	return !rules->get_epsilon_rules().empty();
+}
+
+void automaton::reorder_states() {
+	std::vector<int> visited;
+	
+	std::queue<int> queue;
+	queue.push(rules->start_state);
+	
+	do {
+		while (!queue.empty() && std::find(visited.begin(), visited.end(), queue.front()) != visited.end()) {
+			queue.pop();
+		}
+		
+		if(queue.empty()) break;
+		int current = queue.front();
+		queue.pop();
+		visited.push_back(current);
+		
+		std::vector<rule *> f_rules = this->rules->get_rules_for_state(current);
+		
+		for (const auto &eps_rule : f_rules) {
+			int next_state = eps_rule->get_end_state();
+			
+			if (std::find(visited.begin(), visited.end(), next_state) == visited.end()) {
+				queue.push(next_state);
+			}
+		}
+		
+		
+	} while (!queue.empty());
+	
+	
+	std::map<int, int> delta;
+	for (int i = 0; i < visited.size(); ++i) {
+		int new_state = i;
+		int old_state = visited[i];
+		delta.insert({old_state, new_state});
 	}
-	return true;
+	
+	auto new_rules = new ruleset();
+	for (const auto &rule : rules->get_all_rules()) {
+		auto new_rule = rule->to_wrapper_rule(delta[rule->start_state], delta[rule->end_state]);
+		new_rules->add_rule(new_rule);
+	}
+	
+	new_rules->set_start_state(delta[get_start_state()]);
+	for(int fs : get_accepting_states()) {
+		new_rules->add_accepting_state(delta[fs]);
+	}
+	
+	delete this->rules;
+	this->rules = new_rules;
 }
 
 bool automaton::remove_epsilon_transitions() {
 	auto new_rules = new ruleset();
-	auto final_eps_rules = rules->get_rules_that(
-			rule_requirement::is_eps(true) & rule_requirement::is_end(get_accepting_states())
-			);
+	new_rules->set_start_state(rules->get_start_state());
 	
-	std::set<int> new_accepting_states;
-	for (const auto &final_eps_rule : final_eps_rules) {
-		new_accepting_states.insert(final_eps_rule->get_start_state());
+	for (int state : get_used_states()) {
+		
+		auto eps_from = rules->epsilon_closure(state);
+		if(rules->contains_accepting_state(std::vector<int>(eps_from.begin(), eps_from.end()))) {
+			new_rules->add_accepting_state(state);
+		}
+		
+		for (int from : eps_from) {
+			auto mid_rules = rules->get_rules_that(rule_requirement::is_eps(false) & rule_requirement::is_start(from));
+			
+			for (rule *mid_rule : mid_rules) {
+				
+				/*
+				auto eps_to = rules->epsilon_closure(mid_rule->end_state);
+				for (const auto &to : eps_to) {
+					   rule* new_rule = mid_rule->to_wrapper_rule(state, to);
+					   new_rules->add_rule(new_rule);
+				}
+				 */
+				
+				rule* new_rule = mid_rule->to_wrapper_rule(state, mid_rule->end_state);
+				new_rules->add_rule(new_rule);
+				
+			}
+		}
+		
+		
 	}
 	
+	new_rules->remove_useless_rules();
+	new_rules->remove_useless_accepting_states();
 	
-	auto eps_rules = rules->get_rules_that(rule_requirement::is_eps(true));
+	delete this->rules;
+	this->rules = new_rules;
 	
-	
-	
-	
-	
+	reorder_states();
 	return !has_epsilon_transitions();
 }
 

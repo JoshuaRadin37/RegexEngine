@@ -47,6 +47,7 @@ public:
 	void print_info() const;
 	
 	bool remove_epsilon_transitions();
+	void reorder_states();
 };
 
 

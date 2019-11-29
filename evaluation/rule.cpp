@@ -2,6 +2,7 @@
 // Created by jradi on 10/30/2019.
 //
 
+#include <sstream>
 #include "rule.h"
 #include "evaluation/rules/wrapper_rule.h"
 
@@ -29,5 +30,8 @@ std::string rule::match_reason() const{
 }
 
 std::string rule::to_string() const{
-	return std::to_string(start_state) + " on " + match_reason() + " -> " + std::to_string(end_state);
+	
+	
+	return std::to_string(start_state) + " on " + match_reason() + " -> "
+	+ std::to_string(end_state);
 }

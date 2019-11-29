@@ -2,6 +2,7 @@
 // Created by jradi on 11/4/2019.
 //
 
+#include <sstream>
 #include "character_class.h"
 
 character_class::iterator::iterator(const std::vector<range<char> * >& ranges) {

@@ -101,8 +101,8 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 					quantifier_info info(min, max, has_min, has_max, is_exact);
 					dup_tok_list.emplace_back(info);
 				} else {
-					token t = ((token_node *) ptr->get_child(0))->get_my_token();
-					dup_tok_list.emplace_back(&t);
+					token* t = new token(((token_node *) ptr->get_child(0))->get_my_token());
+					dup_tok_list.emplace_back(t);
 				}
 				
 				
@@ -118,7 +118,6 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 				if(quant.is_tok)
 					op = (uniop *) category_to_operator(category, *quant.tok);
 				else
-					
 					op = new quantifier_op(quant.info.to_string(), quant.info);
 				
 				

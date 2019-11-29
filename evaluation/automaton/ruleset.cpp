@@ -114,8 +114,48 @@ std::vector<rule *> ruleset::get_rules_that(rule_requirement r) const{
 	return output;
 }
 
+
+
 std::vector<rule *> ruleset::operator<<(const rule_requirement& r) {
 	return get_rules_that(r);
+}
+
+void ruleset::remove_useless_rules() {
+	std::set<int> visited;
+	
+	std::queue<int> queue;
+	queue.push(start_state);
+	
+	do {
+		
+		int current = queue.front();
+		queue.pop();
+		visited.insert(current);
+		
+		std::vector<rule *> rules = get_rules_for_state(current);
+		
+		for (const auto &eps_rule : rules) {
+			int next_state = eps_rule->get_end_state();
+			
+			if (visited.find(next_state) == visited.end()) {
+				queue.push(next_state);
+			}
+		}
+		
+		
+	} while (!queue.empty());
+	
+	std::set<int> unused;
+	for (const auto &item : *state_to_rule_map) {
+		if(visited.find(item.first) == visited.end()) {
+			unused.insert(item.first);
+		}
+	}
+	
+	for (const auto &state : unused) {
+		state_to_rule_map->erase(state);
+	}
+	
 }
 
 std::set<int> ruleset::epsilon_closure(int state) const {
@@ -147,4 +187,20 @@ std::set<int> ruleset::epsilon_closure(int state) const {
 	
 	
 	return visited;
+}
+
+void ruleset::remove_useless_accepting_states() {
+	std::set<int> remove;
+	
+	for (const auto &state : accepting_states) {
+		if(state_to_rule_map->find(state) == state_to_rule_map->end()) {
+		
+			remove.insert(state);
+		}
+	}
+	
+	for (const auto &item : remove) {
+		accepting_states.erase(item);
+	}
+	
 }

@@ -9,7 +9,7 @@ rule_requirement::rule_requirement(bool eps) : is_epsilon(eps? 0b10 : 0b01) {
 
 }
 
-rule_requirement::rule_requirement(int backing_field_int, bool start) {
+rule_requirement::rule_requirement(int backing_field_int, bool start) : is_epsilon(0) {
 	if(start) {
 		start_states.insert(backing_field_int);
 	}else {
@@ -52,7 +52,7 @@ rule_requirement rule_requirement::is_end(std::initializer_list<int> e) {
 }
 
 const rule_requirement rule_requirement::operator&(const rule_requirement &other) const {
-	rule_requirement output(is_epsilon | other.is_epsilon);
+	rule_requirement output((int) (is_epsilon | other.is_epsilon));
 	
 	output.start_states.insert(start_states.begin(), start_states.end());
 	output.start_states.insert(other.start_states.begin(), other.start_states.end());
@@ -64,7 +64,7 @@ const rule_requirement rule_requirement::operator&(const rule_requirement &other
 }
 
 const rule_requirement rule_requirement::operator!() const {
-	rule_requirement output = rule_requirement(is_epsilon);
+	rule_requirement output = rule_requirement((int) is_epsilon);
 	output.start_states = std::set<int>(start_states);
 	output.end_states = std::set<int>(end_states);
 	
@@ -77,7 +77,7 @@ rule_requirement::rule_requirement() {}
 rule_requirement rule_requirement::eps = rule_requirement::is_eps(true);
 
 bool rule_requirement::match_requirements(rule *rule) {
-	bool eps_match = false, start_match = true, end_match = true;
+	bool eps_match = true, start_match = true, end_match = true;
 	switch(is_epsilon) {
 		case 0b01:
 			eps_match = rule->is_force_occur();
@@ -88,6 +88,8 @@ bool rule_requirement::match_requirements(rule *rule) {
 		case 0b11:
 			eps_match = true;
 			break;
+		default:
+			break;
 	}
 	
 	if (!start_states.empty())
@@ -97,5 +99,9 @@ bool rule_requirement::match_requirements(rule *rule) {
 		end_match = end_states.find(rule->get_end_state()) != end_states.end();
 	
 	
-	return (eps_match && start_match && end_match) == !invert;
+	return (eps_match && start_match && end_match) != invert;
+}
+
+rule_requirement::rule_requirement(int backing_field_eps) : is_epsilon(backing_field_eps) {
+
 }

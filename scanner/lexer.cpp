@@ -31,6 +31,7 @@ void scanning::lexer::create_next_token() {
 		case '[': {
 			int start_index = current_index;
 			bool matched = false;
+			image = "";
 			while(!matched && current_index < input.size()) {
 				image += current_char();
 				if(current_char() == ']') matched = true;
