@@ -12,10 +12,20 @@ using type = token::type;
 parser::parser(scanning::lexer *my_lexer) : lexer(my_lexer) {}
 
 bool parser::match(type tok) {
-	return lexer->get_current().get_token_type() == tok;
+	return lexer->get_current().is(tok);
 }
 
 bool parser::consume(type tok) {
+	bool output = match(tok);
+	if(output) ++(*lexer);
+	return output;
+}
+
+bool parser::match(token::sub_type tok) {
+	return lexer->get_current().is(tok);
+}
+
+bool parser::consume(token::sub_type tok) {
 	bool output = match(tok);
 	if(output) ++(*lexer);
 	return output;
@@ -46,11 +56,13 @@ GT -> <G>
    -> eps
 S -> <X><ST>
 ST -> (*|?|+)<ST>
+   -> <Q><ST>
    -> eps
 X -> (<E>)
   -> <A>
 A -> t_atom
   -> t_special
+Q -> {n?(,n?)?}
 */
 category_node *parser::parse_expression() {
 	auto output = new category_node("expression");
@@ -77,13 +89,8 @@ bool parser::parse_expression(category_node *parent) {
 		case token::type::t_rparen:
 			parent->add_child(child);
 			break;
-		case type::t_plus:
-		case type::t_question:
-		case token::type::t_union:
-		case token::type::t_star:
-		
+		default:
 			return false;
-
 	}
 	
 	return true;
@@ -117,13 +124,8 @@ bool parser::parse_group(category_node *parent) {
 			parent->add_child(child);
 		}
 			break;
-
-		case token::type::t_rparen:
-		case token::type::t_union:
-		case token::type::t_star:
-		case type::t_plus:
-		case type::t_question:
-		case token::type::t_EOF:
+		
+		default:
 			return false;
 	}
 	
@@ -166,12 +168,7 @@ bool parser::parse_segment(category_node *parent) {
 		}
 			break;
 		
-		case token::type::t_union:
-		case token::type::t_star:
-		case type::t_plus:
-		case type::t_question:
-		case token::type::t_rparen:
-		case token::type::t_EOF:
+		default:
 			return false;
 	}
 	
@@ -189,9 +186,55 @@ bool parser::parse_segment_tail(category_node *parent) {
 			child->add_child(node);
 			if (!parse_segment_tail(child)) return false;
 			parent->add_child(child);
+			break;
+		}
+		case type::t_lcurly: {
+			if(!parse_quantifier(child)) return false;
+			if(!parse_segment_tail(child)) return false;
+			parent->add_child(child);
+			break;
 		}
 		default:
 			break;
+	}
+	
+	return true;
+}
+
+bool parser::parse_quantifier(category_node *parent) {
+	auto child = new category_node("quantifier");
+	switch (lexer->get_current().get_token_type()) {
+		case token::type::t_lcurly: {
+			consume();
+			if(!parse_int(child)) {
+				if(!parse_quantifier_tail(child)) return false;
+			}else{
+				parse_quantifier_tail(child);
+			}
+			if(!consume(type::t_rcurly)) {
+				return false;
+			}
+			parent->add_child(child);
+			break;
+		}
+		default:
+			return false;
+	}
+	
+	return true;
+}
+
+bool parser::parse_quantifier_tail(category_node *parent) {
+	auto child = new category_node("quantifier_tail");
+	
+	switch (lexer->get_current().get_token_type()) {
+		case token::type::t_atom:
+			if(!consume(token::sub_type::s_comma)) return false;
+			parse_int(child);
+			parent->add_child(child);
+			break;
+		default:
+			return false;
 	}
 	
 	return true;
@@ -215,12 +258,7 @@ bool parser::parse_X(category_node *parent) {
 			if(!consume(type::t_rparen)) return false;
 			parent->add_child(child);
 			break;
-		case token::type::t_rparen:
-		case token::type::t_union:
-		case token::type::t_star:
-		case type::t_plus:
-		case type::t_question:
-		case token::type::t_EOF:
+		default:
 			return false;
 	}
 	
@@ -240,15 +278,29 @@ bool parser::parse_atom(category_node *parent) {
 			parent->add_child(child);
 		}
 			break;
-		case type::t_lparen:
-		case type::t_rparen:
-		case type::t_union:
-		case type::t_star:
-		case type::t_plus:
-		case type::t_question:
-		case type::t_EOF:
+		default:
 			return false;
 	}
 	
 	return true;
+}
+
+bool parser::parse_int(category_node *parent) {
+	
+	std::string image;
+	bool found_one = false;
+	
+	while(match(token::sub_type::s_digit)) {
+		if(!found_one) found_one = true;
+		char d = consume().get_image()[0];
+		image += d;
+	}
+	
+	if(found_one) {
+		auto child = new category_node("int");
+		child->add_child(new token_node(image));
+		parent->add_child(child);
+	}
+	
+	return found_one;
 }

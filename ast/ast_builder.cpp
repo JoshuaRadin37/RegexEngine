@@ -3,6 +3,8 @@
 //
 
 #include <parser/token_node.h>
+#include <ast/operators/quantifier_info.h>
+#include <ast/operators/quantifier_op.h>
 #include "ast_builder.h"
 
 ast::ast_builder::ast_builder(parse_node *head) : head(head) {}
@@ -50,7 +52,7 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 			return convert_category_node_to_ast_node(node->get_child("atom"));
 		}
 	}else if(category == "expression" && node->num_children() == 0)
-			return create_atomic_node(token(token::type::t_special, "\\e", 0));
+		return create_atomic_node(token(token::type::t_special, "\\e", 0));
 	
 	abstract_syntax_node *inner_node_as_ast_node = convert_category_node_to_ast_node(
 			(category_node *) node->get_child(0));
@@ -72,33 +74,52 @@ abstract_syntax_node *ast::ast_builder::convert_category_node_to_ast_node(catego
 	} else if(category == "segment") {
 		
 		if(node->num_children() == 2) { // has duplication
-			abstract_syntax_node* built = nullptr;
-			std::vector<token> dup_tok_stack;
+			abstract_syntax_node* built_ops = nullptr;
+			std::vector<quantifier> dup_tok_list;
 			category_node* ptr = node;
 			do {
-				try {
-					ptr = ptr->get_child("segment_tail");
-					token t = ((token_node *) ptr->get_child(0))->get_my_token();
-					dup_tok_stack.push_back(t);
-				} catch (const category_node::category_not_found_exception& e) {
-					break;
-				}
-			} while(true);
-			
-			
-			for (const auto &tok : dup_tok_stack) {
 				
-				uniop op = *(uniop *) category_to_operator(category, tok);
-				if(built == nullptr) {
-					built = create_uniop_node(op, inner_node_as_ast_node);
+				ptr = ptr->get_child("segment_tail");
+				
+				if(ptr->has_child_category("quantifier")) {
+					bool has_min, has_max;
+					int min, max;
+					auto q_node = ptr->get_child("quantifier");
+					if(q_node->has_child_category("int")) {
+						has_min = true;
+						
+					}
 				} else {
-					built = create_uniop_node(op, built);
+					token t = ((token_node *) ptr->get_child(0))->get_my_token();
+					dup_tok_list.emplace_back(&t);
+				}
+				
+				
+				
+				
+			} while(ptr->has_child_category("segment_tail"));
+			
+			
+			for (const auto &quant : dup_tok_list) {
+				
+				
+				uniop* op;
+				if(quant.is_tok)
+					op = (uniop *) category_to_operator(category, *quant.tok);
+				else
+					op = new quantifier_op(ptr->get_terminals(), quant.info);
+				
+				
+				if(built_ops == nullptr) {
+					built_ops = create_uniop_node(*op, inner_node_as_ast_node);
+				} else {
+					built_ops = create_uniop_node(*op, built_ops);
 				}
 			}
 			
 			
 			
-			return built;
+			return built_ops;
 		}
 		
 		return inner_node_as_ast_node;

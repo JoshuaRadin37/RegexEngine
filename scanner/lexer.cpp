@@ -6,6 +6,7 @@
 
 using namespace std;
 using type = token::type;
+using sub_type = token::sub_type;
 
 scanning::lexer::lexer() : input("") { }
 
@@ -78,8 +79,14 @@ void scanning::lexer::create_next_token() {
 			current = token(type::t_special, image, start_index);
 			break;
 		}
+		case ',': {
+			current = token(type::t_atom, sub_type::s_comma, image, current_index++);
+			break;
+		}
 		default:
-			current = token(type::t_atom, image, current_index++);
+			if(c >= '0' && c <= '9')
+				current = token(type::t_atom, sub_type::s_digit, image, current_index++);
+			else current = token(type::t_atom, image, current_index++);
 			break;
 	}
 }

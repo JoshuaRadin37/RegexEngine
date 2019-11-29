@@ -15,7 +15,7 @@ protected:
 	explicit uniop(const std::string &operator_string);
 
 public:
-	
+	friend class quanfitier_op;
 	
 	static uniop* CLOSURE;
 	static uniop* NONE_OR_ONE;

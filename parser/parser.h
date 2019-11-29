@@ -56,19 +56,26 @@ private:
 	
 	bool parse_segment(category_node* parent);
 	bool parse_segment_tail(category_node* parent);
+	bool parse_quantifier(category_node* parent);
+	bool parse_quantifier_tail(category_node* parent);
+	bool parse_int(category_node *parent);
 	
 	bool parse_X(category_node* parent);
 	
 	bool parse_atom(category_node* parent);
 	
+	
 	bool match(token::type tok);
 	bool consume(token::type tok);
+	bool match(token::sub_type tok);
+	bool consume(token::sub_type tok);
 	bool match(std::string image, token::type t_type = token::type::t_atom);
 	bool consume(std::string image, token::type t_type = token::type::t_atom);
 	token consume();
 public:
 	
 	parser(scanning::lexer *my_lexer);
+	
 	
 	category_node* parse_expression();
 	

@@ -6,6 +6,12 @@
 
 token_node::token_node(const token &my_token) : my_token(my_token) {}
 
+token_node::token_node(const std::string &image) : my_token(
+		token::type::t_string, image, 0
+		){
+	
+}
+
 std::string token_node::get_terminals() {
 	return my_token.get_image();
 }

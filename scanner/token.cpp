@@ -3,6 +3,7 @@
 //
 
 #include "token.h"
+#include "token_type_info.h"
 
 #include <utility>
 
@@ -36,3 +37,26 @@ bool token::operator!=(const token &rhs) const {
 	return !(rhs == *this);
 }
 
+bool token::is(token_type_info inf) {
+	return this->token_type == inf.t && (inf.s == sub_type::s_nil || this->sub_token_type == inf.s);
+}
+
+std::map<sub_type, type> token::sub_type_parent = std::map<sub_type, type> ();
+token::constructor token::cons = constructor();
+token::constructor::constructor() {
+	sub_type_parent.insert({sub_type::s_comma, type::t_atom});
+	sub_type_parent.insert({sub_type::s_digit, type::t_atom});
+}
+
+bool token::is(type t_type) {
+	return is(token_type_info(t_type));
+}
+
+bool token::is(sub_type s_type) {
+	type t_type = token::sub_type_parent[s_type];
+	return is(token_type_info(t_type, s_type));
+}
+
+sub_type token::get_sub_token_type() const {
+	return sub_token_type;
+}

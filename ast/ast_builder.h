@@ -29,6 +29,7 @@ namespace ast {
 		
 		bool is_built() const;
 	
+		
 	private:
 		binop_node* create_binop_node(binop op, abstract_syntax_node* left, abstract_syntax_node* right);
 		uniop_node* create_uniop_node(uniop op, abstract_syntax_node* affected);

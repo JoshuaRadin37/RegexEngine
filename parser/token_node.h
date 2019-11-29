@@ -14,6 +14,7 @@ private:
 	token my_token;
 public:
 	token_node(const token &my_token);
+	token_node(const std::string &image);
 	
 	virtual std::string get_terminals() override;
 	
