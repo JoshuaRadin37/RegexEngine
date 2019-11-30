@@ -307,9 +307,22 @@ void automaton::reorder_states() {
 	this->rules = new_rules;
 }
 
+std::vector<int> automaton::get_epsilon_states() const {
+	auto output = std::vector<int>();
+	auto eps_rules = rules->get_rules_that(rule_requirement::is_eps(true));
+	for (const auto &eps_rule : eps_rules) {
+		if(std::find(output.begin(), output.end(), eps_rule->start_state) == output.end()) {
+			output.push_back(eps_rule->start_state);
+		}
+	}
+	return output;
+}
+
 bool automaton::remove_epsilon_transitions() {
 	auto new_rules = new ruleset();
 	new_rules->set_start_state(rules->get_start_state());
+	
+	std::map<int, int> delta;
 	
 	for (int state : get_used_states()) {
 		
@@ -319,6 +332,8 @@ bool automaton::remove_epsilon_transitions() {
 		}
 		
 		for (int from : eps_from) {
+			delta.emplace(from, state);
+			
 			auto mid_rules = rules->get_rules_that(rule_requirement::is_eps(false) & rule_requirement::is_start(from));
 			
 			for (rule *mid_rule : mid_rules) {
@@ -342,6 +357,16 @@ bool automaton::remove_epsilon_transitions() {
 	
 	new_rules->remove_useless_rules();
 	new_rules->remove_useless_accepting_states();
+	
+	for(group* g : *g_data->get_groups()) {
+		g->set_start_state(delta[g->get_start_state()]);
+		std::set<int> new_final_states;
+		for (int i = 0; i < g->get_final_states().size(); ++i) {
+			int changed_state = delta[g->get_final_states()[i]];
+			new_final_states.insert(changed_state);
+		}
+		g->set_final_states(std::vector<int>(new_final_states.begin(), new_final_states.end()));
+	}
 	
 	delete this->rules;
 	this->rules = new_rules;

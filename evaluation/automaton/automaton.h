@@ -30,6 +30,7 @@ private:
 	
 protected:
 	std::vector<int> get_used_states() const;
+	std::vector<int> get_epsilon_states() const;
 	int get_start_state() const;
 	std::vector<int> get_accepting_states() const;
 	
