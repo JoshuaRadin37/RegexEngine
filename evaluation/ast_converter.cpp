@@ -143,7 +143,13 @@ automaton *ast_converter::convert_one_or_more(uniop_node *node) {
 }
 
 automaton *ast_converter::convert_container(uniop_node *node) {
-	return convert_node(node->get_internal());
+	auto p_automaton = new automaton(new ruleset());
+	const automaton::automaton_state_transpose &transpose = p_automaton->add_automaton(
+			*convert_node(node->get_internal()), true);
+	p_automaton->rules->set_start_state(transpose.initial_state);
+	p_automaton->rules->add_accepting_state(transpose.final_states);
+	
+	return p_automaton;
 }
 
 automaton *ast_converter::convert_expression(abstract_syntax_node *node) {

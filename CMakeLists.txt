@@ -24,7 +24,7 @@ add_library(${PROJECT_NAME} scanner/token.cpp scanner/token.h
 		evaluation/rules/inversions/invert_character_class.cpp
 		evaluation/rules/inversions/invert_character_class.h
 		evaluation/rules/character_class/comparable.h
-		scanner/token_type_info.cpp scanner/token_type_info.h ast/operators/quantifier_info.cpp ast/operators/quantifier_info.h ast/operators/quantifier_op.cpp ast/operators/quantifier_op.h)
+		scanner/token_type_info.cpp scanner/token_type_info.h ast/operators/quantifier_info.cpp ast/operators/quantifier_info.h ast/operators/quantifier_op.cpp ast/operators/quantifier_op.h evaluation/automaton/grouping/group_data.cpp evaluation/automaton/grouping/group_data.h evaluation/automaton/grouping/group.cpp evaluation/automaton/grouping/group.h evaluation/automaton/vector_print.h)
 
 add_library(sub::lib ALIAS ${PROJECT_NAME})
 include_directories(${PROJECT_SOURCE_DIR})

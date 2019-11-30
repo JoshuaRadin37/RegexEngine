@@ -10,19 +10,7 @@
 #include <iostream>
 #include <queue>
 #include "automaton.h"
-
-template <typename T>
-static std::ostream& operator<<(std::ostream& os, const std::vector<T>& vector) {
-	os << "[";
-	bool first = true;
-	for (const T &item : vector) {
-		if(!first) os << ", ";
-		else first = false;
-		os << item;
-	}
-	os << "]";
-	return os;
-}
+#include "vector_print.h"
 
 automaton::automaton(ruleset *rules) : rules(rules) {}
 
@@ -34,6 +22,11 @@ std::vector<int> map_pairs_to_states(const std::vector<std::pair<int, int>>& v) 
 	return output;
 }
 
+group * automaton::create_group() const{
+	return new group(0, get_start_state(), get_accepting_states());
+}
+
+
 template <>
 std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<int, int>>& v) {
 	os << "[";
@@ -44,6 +37,22 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<int, int>
 		os << "{state: " << item.first << ", position: " << item.second << "}";
 	}
 	os << "]";
+	return os;
+}
+
+template <>
+std::ostream& operator<< <rule *>(std::ostream& os, const std::vector<rule *>& vector) {
+	struct {
+		bool operator() (rule* a, rule* b) {
+			if(a->get_start_state() == b->get_start_state()) return a->get_end_state() < b->get_end_state();
+			return a->get_start_state() < b->get_start_state();
+		}
+	} custom_less;
+	std::vector<rule *> sorted(vector);
+	std::sort(sorted.begin(), sorted.end(), custom_less);
+	for (const rule* r : sorted) {
+		os << "\t" << r->to_string() << std::endl;
+	}
 	return os;
 }
 
@@ -162,6 +171,9 @@ std::vector<int> automaton::get_accepting_states() const {
 }
 
 automaton::automaton_state_transpose automaton::add_automaton(const automaton &other) {
+	return add_automaton(other, false);
+}
+automaton::automaton_state_transpose automaton::add_automaton(const automaton &other, bool add_full_integrate) {
 	std::map<int, int> old_state_to_new_state_map;
 	
 	for (const int &state : other.get_used_states()) {
@@ -184,25 +196,36 @@ automaton::automaton_state_transpose automaton::add_automaton(const automaton &o
 	}
 	
 	
-	return automaton::automaton_state_transpose(new_initial_state, end_states);
-}
-
-
-template <>
-std::ostream& operator<< <rule *>(std::ostream& os, const std::vector<rule *>& vector) {
-	struct {
-		bool operator() (rule* a, rule* b) {
-			if(a->get_start_state() == b->get_start_state()) return a->get_end_state() < b->get_end_state();
-			return a->get_start_state() < b->get_start_state();
-		}
-	} custom_less;
-	std::vector<rule *> sorted(vector);
-	std::sort(sorted.begin(), sorted.end(), custom_less);
-	for (const rule* r : sorted) {
-		os << "\t" << r->to_string() << std::endl;
+	
+	const automaton_state_transpose &transpose = automaton::automaton_state_transpose(new_initial_state, end_states);
+	
+	if(!add_full_integrate) integrate_group_data(*(other.g_data), old_state_to_new_state_map);
+	else {
+		
+		const group_data &fixed_data = other.get_group_data();
+		integrate_group_data(fixed_data, old_state_to_new_state_map);
 	}
-	return os;
+	
+	return transpose;
 }
+
+void automaton::add_self_as_group() {
+	g_data->get_groups()->push_back(create_group());
+}
+
+void automaton::integrate_group_data(group_data data, std::map<int, int> transpose) {
+	group_data fixed(std::move(data));
+	for (auto group_ptr : *fixed.get_groups()) {
+		group_ptr->set_start_state(transpose[group_ptr->get_start_state()]);
+		std::vector<int> fixed_states;
+		for (int final_state : group_ptr->get_final_states()) {
+			fixed_states.push_back(transpose[final_state]);
+		}
+		group_ptr->set_final_states(fixed_states);
+	}
+	this->g_data->integrate_group_info(fixed);
+}
+
 
 void automaton::print_info() const {
 	std::vector<int> used = get_used_states();
@@ -210,6 +233,11 @@ void automaton::print_info() const {
 	std::cout << "States: " << used << std::endl;
 	std::cout << "Start state: " << get_start_state() << std::endl;
 	std::cout << "Accepting states: " << get_accepting_states() << std::endl;
+	std::cout << "Groups: " << std::endl;
+	group_data data = get_group_data();
+	for(auto g : *(data.get_groups())) {
+		std::cout << "\t" << g->to_string() << std::endl;
+	}
 	std::cout << "Rules: " << std::endl;
 	std::cout << rules->get_all_rules();
 }
@@ -266,6 +294,15 @@ void automaton::reorder_states() {
 		new_rules->add_accepting_state(delta[fs]);
 	}
 	
+	for(group* g : *g_data->get_groups()) {
+		g->set_start_state(delta[g->get_start_state()]);
+		std::vector<int> new_final_states(g->get_final_states().size());
+		for (int i = 0; i < g->get_final_states().size(); ++i) {
+			new_final_states[i] = delta[g->get_final_states()[i]];
+		}
+		g->set_final_states(new_final_states);
+	}
+	
 	delete this->rules;
 	this->rules = new_rules;
 }
@@ -311,5 +348,18 @@ bool automaton::remove_epsilon_transitions() {
 	
 	reorder_states();
 	return !has_epsilon_transitions();
+}
+
+group_data automaton::get_group_data() const{
+	group_data output;
+	output.get_groups()->push_back(create_group());
+	output.integrate_group_info(*g_data);
+	for (int i = 0; i < output.get_groups()->size(); ++i) {
+		group* g = (*output.get_groups())[i];
+		if(!g->is_has_name()) {
+			g->set_id(i);
+		}
+	}
+	return output;
 }
 
